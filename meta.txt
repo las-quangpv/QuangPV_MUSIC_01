@@ -1,0 +1,23 @@
+com.sinwua.music.player
+
+Sinwua
+
+Sinwua Music
+Music: Manager, Play & Share
+
+song,mp3,audio,favorite,my,file,cound,box,driver,create,album,share,tracks,thumb
+
+
+Sinwua Music Manager and Player is an all-encompassing application designed to cater to every facet of your musical journey.
+The Home section serves as a central hub, neatly categorizing your extensive music library into sections such as All Songs, Albums, Cloud, and Box Driver.
+This intuitive organization ensures that navigating through your diverse collection is both effortless and efficient.
+
+The Music Player feature elevates your listening experience with a dedicated "Now Playing" mode, providing a seamless interface for enjoying your favorite tunes.
+The Favorites option empowers users to curate personalized lists of songs and MP3s, granting the flexibility to easily share cherished tracks or delete those no longer desired.
+
+In the Album section, the application encourages creativity by allowing users to craft custom albums.
+This includes the ability to add songs, set album thumbnails for a visual touch, and organize tracks with ease.
+The flexibility extends further with options to edit, delete, and share albums, providing users with complete control over their musical compilations.
+
+What sets Music Manager apart is its user-friendly interface that seamlessly combines functionality and aesthetics.
+The application not only focuses on the practical aspects of music management but also ensures an engaging and enjoyable user experience.
