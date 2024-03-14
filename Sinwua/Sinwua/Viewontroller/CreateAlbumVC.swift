@@ -8,7 +8,6 @@ class CreateAlbumVC: BaseVC {
     var musicList = [MusicModel]()
     var musicUpdateList = [MusicModel]()
     var albumModel: AlbumModel?
-    var isNew = true
     var images: [String] = ["ic_image_1", "ic_image_2", "ic_image_3", "ic_image_4","ic_image_5", "ic_image_6","ic_image_7", "ic_image_8","ic_image_9", "ic_image_10","ic_image_11", "ic_image_12","ic_image_13", "ic_image_14", "ic_image_15"]
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -27,14 +26,10 @@ class CreateAlbumVC: BaseVC {
         clvBackground.dataSource = self
         clvBackground.register(UINib(nibName: "BackgroundAlbumCell", bundle: nil), forCellWithReuseIdentifier: "BackgroundAlbumCell")
     }
-    func setupData() {
-        if albumModel != nil {
-            
-        }
-    }
+
     func isAddMusicToAlbum(musicModel: MusicModel) -> Bool {
         let idAlbums = musicModel.id_album.components(separatedBy: ",")
-        if idAlbums.contains("\(albumModel?.id ?? "-1")") {
+        if idAlbums.contains("\(String(describing: albumModel!.id))") {
             return true
         }
         return false
@@ -54,21 +49,11 @@ class CreateAlbumVC: BaseVC {
     
     @IBAction func actionSave(_ sender: Any) {
         if let albumModel = albumModel {
-            if(isNew) {
-                SQLiteMusicServices.newInstance().insertAlbum(albumModel: albumModel)
-            }else {
-                SQLiteMusicServices.newInstance().updateAlbum(albumModel: albumModel)
-            }
+            SQLiteMusicServices.newInstance().updateAlbum(albumModel: albumModel)
         }
         SQLiteMusicServices.newInstance().updateAllMusic(musicList: musicList) {
-            if(isNew) {
-                self.showMessage(message: "Create album finish") {
-                    self.navigationController?.popViewController(animated: true)
-                }
-            }else {
-                self.showMessage(message: "Update album finish") {
-                    self.navigationController?.popViewController(animated: true)
-                }
+            self.showMessage(message: "Save album success") {
+                self.navigationController?.popViewController(animated: true)
             }
         }
     }

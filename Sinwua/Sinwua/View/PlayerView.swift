@@ -7,6 +7,7 @@ class PlayerView: UIView {
     @IBOutlet weak var btnPlayer: UIButton!
     @IBOutlet weak var lblNameMusic: UILabel!
 
+    @IBOutlet weak var lblKb: UILabel!
     var controller: UIViewController?
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -62,6 +63,10 @@ class PlayerView: UIView {
     func setupView() {
         if let musicModel = MusicManager.getInstance.currentMusicModel() {
             lblNameMusic.text = musicModel.name
+            let url = App.getUrlPath(fileName: musicModel.file_path)
+            if let fileSize = getAudioFileSize(atPath: url) {
+                lblKb.text = fileSize
+            }
             togetherPlayButton()
         }
     }

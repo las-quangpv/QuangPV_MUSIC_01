@@ -3,7 +3,6 @@ import UIKit
 import XLPagerTabStrip
 import Lottie
 import MediaPlayer
-
 class HomeVC: BaseVC, IndicatorInfoProvider {
     @IBOutlet weak var tbvMusic: UITableView!
     @IBOutlet weak var vEmpty: UIView!
@@ -13,6 +12,8 @@ class HomeVC: BaseVC, IndicatorInfoProvider {
     @IBOutlet weak var clvAlbum: UICollectionView!
     @IBOutlet weak var lblEmpty: UILabel!
     @IBOutlet weak var viewAnimation: UIView!
+    @IBOutlet weak var lblAddFromEmpty: UILabel!
+
     private let animationLoading = LottieAnimationView(name: "empty")
     var itemInfo: IndicatorInfo = "View"
     var categories: [String] = ["All Song", "Album", "Cloud", "Box Driver"]
@@ -63,6 +64,17 @@ class HomeVC: BaseVC, IndicatorInfoProvider {
    
     func showViewEmpty() {
         lblEmpty.text = "List music empty"
+        if (indexCategory == 3) {
+            lblAddFromEmpty.text = "Add music from BoxDriver"
+        }else if (indexCategory == 0) {
+            lblAddFromEmpty.text = "Add music now"
+        }else if (indexCategory == 1) {
+            lblAddFromEmpty.text = "Create new album"
+            
+        } else if (indexCategory == 2) {
+            // show cloud
+            lblAddFromEmpty.text = "Add music from Cloud"
+        }
         if(musicList.count == 0) {
             vEmpty.isHidden = false
         }else {
@@ -131,7 +143,7 @@ class HomeVC: BaseVC, IndicatorInfoProvider {
     func getMusicAlbum(albumModel: AlbumModel)-> Int {
         let allMusic = SQLiteMusicServices.newInstance().getMusics(category: "")
         let count = allMusic.filter { musicSelect in
-            return (musicSelect.id_album.components(separatedBy: ",").contains(albumModel.id))
+            return (musicSelect.id_album.components(separatedBy: ",").contains("\(albumModel.id)"))
         }.count
         return count
     }
@@ -139,16 +151,13 @@ class HomeVC: BaseVC, IndicatorInfoProvider {
         return itemInfo
     }
 }
-
 extension HomeVC : UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if(collectionView == clvAlbum) {
             return albumList.count
         }
         return categories.count
     }
-    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if(collectionView == clvAlbum) {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AlbumCell", for: indexPath) as! AlbumCell
@@ -214,31 +223,31 @@ extension HomeVC : UICollectionViewDelegate, UICollectionViewDataSource, UIColle
         cell.addClickBlock = { [self] indexCategory, type in
             self.indexCategory = indexCategory
             if(type == "select") {
-                if (indexCategory == 3) {
+                if(indexCategory == 3) {
                     musicList = SQLiteMusicServices.newInstance().getMusics(category: CategoryInput.boxDriver.rawValue)
                     clvAlbum.isHidden = true
                     tbvMusic.isHidden = false
                     showViewEmpty()
                     tbvMusic.reloadData()
-                }else if (indexCategory == 0) {
+                }else if(indexCategory == 0) {
                     musicList = SQLiteMusicServices.newInstance().getMusics(category: "")
                     clvAlbum.isHidden = true
                     tbvMusic.isHidden = false
                     showViewEmpty()
                     tbvMusic.reloadData()
-                }else if (indexCategory == 1) {
+                }else if(indexCategory == 1) {
                     albumList = SQLiteMusicServices.newInstance().getAlbums()
                     if(albumList.count == 0) {
                         lblEmpty.text = "List album empty"
                         vEmpty.isHidden = false
-                    } else {
+                    }else {
                         vEmpty.isHidden = true
                     }
                     clvAlbum.isHidden = false
                     tbvMusic.isHidden = true
                     clvAlbum.reloadData()
                     // show album
-                } else if (indexCategory == 2) {
+                }else if(indexCategory == 2) {
                     clvAlbum.isHidden = true
                     tbvMusic.isHidden = false
                     musicList = SQLiteMusicServices.newInstance().getMusics(category: CategoryInput.cloud.rawValue)
@@ -267,12 +276,13 @@ extension HomeVC : UICollectionViewDelegate, UICollectionViewDataSource, UIColle
                             if let newText = text, newText != "" {
                                 let albumModel = AlbumModel()
                                 albumModel.name = newText
-                                albumModel.id = "\(Date().timeIntervalSince1970)"
+                                let id = SQLiteMusicServices.newInstance().insertAlbum(albumModel: albumModel)
+                                albumModel.id = id
                                 let vc = CreateAlbumVC()
                                 vc.albumModel = albumModel
                                 self.navigationController?.pushViewController(vc, animated: true)
                             }else {
-                                self.showMessage(message: "Album name is not empty") {
+                                self.showMessage(message: "Album name is not blank") {
                                     
                                 }
                             }
@@ -301,6 +311,73 @@ extension HomeVC : UICollectionViewDelegate, UICollectionViewDataSource, UIColle
             return CGSize(width: size, height: size)
         }
         return CGSize(width: 100, height: 32)
+    }
+    @IBAction func actionAddFromEmpty(_ sender: Any) {
+        if (indexCategory == 3) {
+            let vc = MusicBoxViewController()
+            self.navigationController?.pushViewController(vc, animated: true)
+            
+        }else if (indexCategory == 0) {
+            lblAddFromEmpty.text = "Add music now"
+            let vBottom = UIView(frame: CGRect(x: App.screenWidth()/2, y: App.screenHeight()-56, width: 300, height: 20))
+            self.view.addSubview(vBottom)
+            let makerAlert = UIAlertController(title: "Add music", message: "Add music from BoxDriver and Cloud", preferredStyle: .actionSheet)
+            makerAlert.popoverPresentationController?.sourceView = vBottom
+            makerAlert.addAction(UIAlertAction(title: "BoxDriver", style: .default , handler:{ [self] (UIAlertAction)in
+                let vc = MusicBoxViewController()
+                self.navigationController?.pushViewController(vc, animated: true)
+            }))
+            makerAlert.addAction(UIAlertAction(title: "Cloud", style: .default , handler:{ [self] (UIAlertAction)in
+                // show cloud
+                let pickerController = MPMediaPickerController(mediaTypes: .music)
+                pickerController.delegate = self
+                self.present(pickerController, animated: true)
+            }))
+            
+            makerAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler:{ (UIAlertAction) in
+                    
+            }))
+            
+            self.present(makerAlert, animated: true)
+            
+        }else if (indexCategory == 1) {
+            let alertController = UIAlertController(title: "Create New Album", message: nil, preferredStyle: .alert)
+            alertController.addTextField { (textField) in
+                textField.placeholder = "Album name"
+            }
+            let okAction = UIAlertAction(title: "OK", style: .default) { (action) in
+                if let textField = alertController.textFields?.first {
+                    let text = textField.text
+                    if let newText = text, newText != "" {
+                        let albumModel = AlbumModel()
+                        albumModel.name = newText
+                        let id = SQLiteMusicServices.newInstance().insertAlbum(albumModel: albumModel)
+                        albumModel.id = id
+                        let vc = CreateAlbumVC()
+                        vc.albumModel = albumModel
+                        self.navigationController?.pushViewController(vc, animated: true)
+                    }else {
+                        self.showMessage(message: "Album name is not empty") {
+                            
+                        }
+                    }
+                }
+            }
+            
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (action) in
+               
+            }
+            alertController.addAction(okAction)
+            alertController.addAction(cancelAction)
+            present(alertController, animated: true, completion: nil)
+            
+        } else if (indexCategory == 2) {
+            // show cloud
+            let pickerController = MPMediaPickerController(mediaTypes: .music)
+            pickerController.delegate = self
+            self.present(pickerController, animated: true)
+            
+        }
     }
 }
 
@@ -343,7 +420,7 @@ extension HomeVC: MPMediaPickerControllerDelegate {
         if pathURL == nil {
                 
         }
-
+        self.showLoading()
         let title = item.value(forProperty: MPMediaItemPropertyTitle) as! String
         let newTitle = title.replacingOccurrences(of: " ", with: "")
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -358,14 +435,23 @@ extension HomeVC: MPMediaPickerControllerDelegate {
         exSession?.outputFileType = .m4a
         exSession?.outputURL = fileURL
         exSession?.shouldOptimizeForNetworkUse = true
-        exSession?.exportAsynchronously(completionHandler: {
+        exSession?.exportAsynchronously(completionHandler: { [self] () -> Void in
             if (exSession!.status == AVAssetExportSession.Status.completed){
                 let name = "\(newTitle).m4a"
                 let musicModel = MusicModel()
                 musicModel.file_path = name
+                musicModel.id_album = ""
                 musicModel.name = name
                 musicModel.category = CategoryInput.cloud.rawValue
                 SQLiteMusicServices.newInstance().insertMusic(musicModel: musicModel)
+                DispatchQueue.main.sync {
+                    self.hideLoading()
+                    musicList = SQLiteMusicServices.newInstance().getMusics(category: "")
+                    clvAlbum.isHidden = true
+                    tbvMusic.isHidden = false
+                    showViewEmpty()
+                    tbvMusic.reloadData()
+                }
             } else if (exSession!.status == AVAssetExportSession.Status.cancelled) {
             } else {
             }

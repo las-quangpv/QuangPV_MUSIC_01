@@ -51,11 +51,11 @@ class SQLiteMusicServices: NSObject {
         {
             while resultSet.next() {
                 let item = MusicModel()
-                item.id_album = String(resultSet.string(forColumnIndex: 0) ?? "")
-                item.favourite = Int(resultSet.int(forColumnIndex: 1))
-                item.file_path = String(resultSet.string(forColumnIndex: 2) ?? "")
-                item.name = String(resultSet.string(forColumnIndex: 3) ?? "")
-                item.category = String(resultSet.string(forColumnIndex: 4) ?? "")
+                item.id_album = String(resultSet.string(forColumnIndex: 1) ?? "")
+                item.favourite = Int(resultSet.int(forColumnIndex: 2))
+                item.file_path = String(resultSet.string(forColumnIndex: 3) ?? "")
+                item.name = String(resultSet.string(forColumnIndex: 4) ?? "")
+                item.category = String(resultSet.string(forColumnIndex: 5) ?? "")
                 items.append(item)
             }
         }
@@ -63,10 +63,15 @@ class SQLiteMusicServices: NSObject {
         shared.db!.close()
         return items
     }
-    func insertAlbum(albumModel: AlbumModel) {
+    func insertAlbum(albumModel: AlbumModel) -> Int{
         shared.db!.open()
-        shared.db!.executeUpdate("INSERT INTO album (name, category, image) VALUES (?, ?, ?)", withArgumentsIn: [albumModel.name, albumModel.category, albumModel.image])
+        var isInserted = 0
+        let check =  shared.db!.executeUpdate("INSERT INTO album (name, category, image) VALUES (?, ?, ?)", withArgumentsIn: [albumModel.name, albumModel.category, albumModel.image])
+        if check == true {
+            isInserted = Int(shared.db!.lastInsertRowId)
+        }
         shared.db!.close()
+        return isInserted
     }
     func deleteAlbum(albumModel: AlbumModel) {
         shared.db!.open()
@@ -87,7 +92,7 @@ class SQLiteMusicServices: NSObject {
         if (resultSet != nil) {
             while resultSet.next() {
                 let item = AlbumModel()
-                item.id = String(resultSet.string(forColumnIndex: 0) ?? "")
+                item.id = Int(resultSet.int(forColumnIndex: 0))
                 item.name = String(resultSet.string(forColumnIndex: 1) ?? "")
                 item.category = String(resultSet.string(forColumnIndex: 2) ?? "")
                 item.image = String(resultSet.string(forColumnIndex: 3) ?? "")

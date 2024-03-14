@@ -38,7 +38,7 @@ class AlbumDetailVC: UIViewController {
         if let albumModel = albumModel {
            musicList =  allMusics.filter { musicModel in
                 return musicModel.id_album.components(separatedBy: ",").contains { key in
-                    return key == albumModel.id
+                    return key == "\(albumModel.id)"
                 }
             }
             ivCircle.image = UIImage(named: albumModel.image)
@@ -103,7 +103,7 @@ class AlbumDetailVC: UIViewController {
             if let albumModel = albumModel {
                 var list = musicModel.id_album.components(separatedBy: ",")
                 list.removeAll { key in
-                    return key == albumModel.id
+                    return key == "\(albumModel.id)"
                 }
                 musicModel.id_album = list.joined(separator: ",")
                 SQLiteMusicServices.newInstance().deleteBookMark(musicModel: musicModel)
